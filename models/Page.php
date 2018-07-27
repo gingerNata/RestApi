@@ -3,7 +3,13 @@
 namespace app\models;
 
 use Yii;
-use Yii\mongodb\ActiveRecord;
+use yii\mongodb\ActiveRecord;
+use yii\web\Link;
+use yii\db\Query;
+use yii\web\Linkable;
+use yii\helpers\Url;
+use yii\base\Model;
+
 
 /**
  * This is the model class for collection "pages".
@@ -19,8 +25,23 @@ use Yii\mongodb\ActiveRecord;
  * @property mixed $metatags
  * @property mixed $content
  */
-class Page extends \yii\mongodb\ActiveRecord
+class Page extends ActiveRecord implements Linkable
 {
+    const SCENARIO_CREATE = 'create';
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE = 1;
+
+//    public $id;
+//    public $name;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function primaryKey()
+    {
+        return ['url'];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -48,14 +69,45 @@ class Page extends \yii\mongodb\ActiveRecord
         ];
     }
 
+    public function fields()
+    {
+        return [
+            '_id',
+            'name',
+            'title',
+            'create',
+            'update',
+            'url',
+            'status',
+            'tags',
+            'metatags',
+            'content',
+            ];
+    }
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['name', 'title', 'create', 'update', 'url', 'status', 'tags', 'metatags', 'content'], 'safe']
+            [['name', 'title', 'create', 'update', 'url', 'status', 'content', 'metatags', '_id', 'tags'], 'safe'],
+            [['name', 'title', 'url', 'status'], 'required'],
+            [['name', 'title'], 'string', 'min' => 2],
+            ['_id', 'string'],
+            [['_id', 'url'], 'unique'],
+            ['url', 'trim'],
+            ['url', 'match', 'pattern' => '/^[a-z0-9-]+$/'],
         ];
+    }
+
+    /**
+     */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios['create'] = ['Name','Title','Url'];
+        return $scenarios;
     }
 
     /**
@@ -74,6 +126,23 @@ class Page extends \yii\mongodb\ActiveRecord
             'tags' => Yii::t('app', 'Tags'),
             'metatags' => Yii::t('app', 'Metatags'),
             'content' => Yii::t('app', 'Content'),
+        ];
+    }
+    
+    public function beforeSave($insert)
+    {
+        $this->update = time();
+        $this->tags = explode(', ', $this->tags);
+        return parent::beforeSave($insert);
+    }
+
+    /**
+     * @return array
+     */
+    public function getLinks()
+    {
+        return [
+//            Link::REL_SELF => Url::to(['index'], true),
         ];
     }
 }

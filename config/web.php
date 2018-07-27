@@ -13,8 +13,32 @@ $config = [
     ],
     'components' => [
         'request' => [
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser',
+            ],
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'Sbt8qfDzXSm_KycBX7uR5vNPf-i0ksbJ',
+        ],
+
+        'response' => [
+            'formatters' => [
+                \yii\web\Response::FORMAT_JSON => [
+                    'class' => 'yii\web\JsonResponseFormatter',
+                    'prettyPrint' => YII_DEBUG, // используем "pretty" в режиме отладки
+                    'encodeOptions' => JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+                ],
+            ],
+            'on beforeSend' => function ($event) {
+                $response = $event->sender;
+                if ($response->data !== null) {
+                    $response->data = [
+                        'success' => $response->isSuccessful,
+                        'timestamp' => time(),
+                        'path' => Yii::$app->request->getPathInfo(),
+                        'data' => $response->data,
+                    ];
+                }
+            },
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -28,7 +52,8 @@ $config = [
         ],
         'user' => [
             'identityClass' => 'app\models\User',
-            'enableAutoLogin' => true,
+            'enableSession' => false,
+            'enableAutoLogin' => false,
         ],
 //        'errorHandler' => [
 //            'errorAction' => 'site/error',
@@ -59,10 +84,23 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                '' => 'site/index',
-                '<_c:[\w-]+>' => '<_c>/index',
-                '<_c:[\w-]+>/<id:\d+>' => '<_c>/view',
-                '<_c:[\w-]+>/<id:\d+>/<_a:[\w-]+>' => '<_c>/<_a>',
+                ['class'         => 'yii\rest\UrlRule',
+                 'controller'    => 'page',
+//                 'extraPatterns' => ['GET' => 'index'],
+                 'tokens' => [
+                     '{id}' => '<id:\\w+>',
+                     '{url}' => '<url:\\w+>'
+                    ]
+                ],
+//                '' => 'site/index',
+//                '<action:\w+>' => 'site/<action>',
+//                '<_c:[\w-]+>' => '<_c>/index',
+//                '<controller:\w+>/<id:\d+>' => '<controller>/view',
+//                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
+//                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+//                '<_c:[\w-]+>/<id:\d+>' => '<_c>/view',
+//                '<_c:[\w-]+>/<id:\d+>/<_a:[\w-]+>' => '<_c>/<_a>',
+//                'auth' => 'site/login',
             ],
         ],
 

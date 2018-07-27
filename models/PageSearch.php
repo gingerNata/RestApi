@@ -57,17 +57,21 @@ class PageSearch extends Page
         }
 
         // grid filtering conditions
-        $query->andFilterWhere(['like', '_id', $this->_id])
+        $query->andFilterWhere(['=', '_id', $this->_id])
             ->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'title', $this->title])
-            ->andFilterWhere(['like', 'create', $this->create])
-            ->andFilterWhere(['like', 'update', $this->update])
-            ->andFilterWhere(['like', 'url', $this->url])
-            ->andFilterWhere(['like', 'status', $this->status])
-            ->andFilterWhere(['like', 'tags', $this->tags])
-            ->andFilterWhere(['like', 'metatags', $this->metatags])
-            ->andFilterWhere(['like', 'content', $this->content]);
+            ->andFilterWhere(['=', 'title', $this->title])
+            ->andFilterWhere(['=', 'create', $this->create])
+            ->andFilterWhere(['=', 'update', $this->update])
+            ->andFilterWhere(['=', 'url', $this->url])
+            ->andFilterWhere(['=', 'status', $this->status])
+            ->andFilterWhere(['in', 'tags', $this->tags])
+            ->andFilterWhere(['=', 'metatags', $this->metatags]);
 
         return $dataProvider;
+    }
+
+    public function formName()
+    {
+        return '';
     }
 }

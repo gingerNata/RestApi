@@ -9,6 +9,8 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     public $password;
     public $authKey;
     public $accessToken;
+    public $token;
+    public $expired_at;
 
     private static $users = [
         '100' => [
@@ -100,5 +102,11 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     public function validatePassword($password)
     {
         return $this->password === $password;
+    }
+
+    public function generateToken($expire)
+    {
+        $this->expired_at = $expire;
+        $this->token = \Yii::$app->security->generateRandomString();
     }
 }

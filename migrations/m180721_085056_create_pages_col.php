@@ -8,6 +8,7 @@ class m180721_085056_create_pages_col extends \yii\mongodb\Migration
     {
         $this->createCollection($this->collection);
 
+        $this->createIndex($this->collection, '_id');
         $this->createIndex($this->collection, 'name');
         $this->createIndex($this->collection, 'title');
         $this->createIndex($this->collection, 'create');
@@ -25,9 +26,9 @@ class m180721_085056_create_pages_col extends \yii\mongodb\Migration
                 $this->collection, [
                 'name'     => $lipsum->words(3),
                 'title'    => $lipsum->words(4),
-                'create'   => date('m/d/Y h:i:s', time()),
-                'update'   => date('m/d/Y h:i:s', time()),
-                'url'      => strtolower($lipsum->word()) . $i,
+                'create'   => time(),
+                'update'   => time(),
+                'url'      => strtolower($lipsum->word()) . ($i + 1),
                 'status'   => 1,
                 'tags'     => [$lipsum->word(), $lipsum->word()],
                 'metatags' => $lipsum->words(2),
@@ -38,6 +39,7 @@ class m180721_085056_create_pages_col extends \yii\mongodb\Migration
 
     public function down()
     {
+        $this->dropIndex($this->collection, '_id');
         $this->dropIndex($this->collection, 'name');
         $this->dropIndex($this->collection, 'title');
         $this->dropIndex($this->collection, 'create');
